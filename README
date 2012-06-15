@@ -1,0 +1,10 @@
+Pangolin Kwest!
+
+A ruby roguelike! It might be ascii, it might be isometric, it might be opengl full 3d! Basically it's all in a state of flux.
+
+At the moment you start it with:
+ruby world.rb
+
+You'll get an ascii representation of a random bsp dungeon then an isometric version in SDL using gosu. It uses stonesense tiles at the moment just until I get my own drawn.
+
+graspee
