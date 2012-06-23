@@ -2,9 +2,19 @@ Pangolin Kwest!
 
 A ruby roguelike! It might be ascii, it might be isometric, it might be opengl full 3d! Basically it's all in a state of flux.
 
-At the moment you start it with:
+At the moment it's opengl. You start it with:
 ruby world.rb
 
-You'll get an ascii representation of a random bsp dungeon then an isometric version in SDL using gosu. It uses stonesense tiles at the moment just until I get my own drawn.
+You'll get a 3d rotating dungeon in opengl with ugly purple texture mapping but it will be too zoomed in to see anything. You'll need to hold down control and push the mouse forwards or backwards to see the dungeon.
+
 
 graspee
+
+
+list of gem dependencies (I might forget something, and these may themselves have 
+				other dependencies):
+
+		opengl (drBrain's version- google it to find the github to dl from)
+		png
+		gosu
+		

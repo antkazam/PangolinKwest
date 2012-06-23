@@ -2,13 +2,16 @@
 
 require 'opengl'
 include Gl,Glu,Glut
+require 'png'
+require 'png/reader'
+
 
 $rotl = 1 * Math::PI / 180
 $last_time = 0
 
-$fXDiff = 206
-$fYDiff = 16
-$fZDiff = 10
+$fXDiff =0 # 206
+$fYDiff = 90 # 16
+$fZDiff = 0 # 10
 $xLastIncr = 0
 $yLastIncr = 0
 $fXInertia = -0.5
@@ -20,7 +23,9 @@ $ftime = 0
 $xLast = -1
 $yLast = -1
 $bmModifiers = 0
-$rotate = true
+$rotate = false
+
+$playerx, $playery=0, 0
 
 INERTIA_THRESHOLD = 1.0
 INERTIA_FACTOR = 0.5
@@ -29,7 +34,7 @@ SCALE_INCREMENT = 0.5
 TIMER_FREQUENCY_MILLIS = 20
 
 
-$gleModel = [:cube, :teapot,:torus,:sphere]
+#$gleModel = [:cube, :teapot,:torus,:sphere]
 $clearColor = [[0,0,0,1], [0.2,0.2,0.3,1], [0.7,0.7,0.7,1]]
 
 def drawCube
@@ -56,24 +61,22 @@ def drawCube
 		[ [0,1,0], v[4],v[0],v[1],v[5] ],
 		[ [0,-1,0], v[6],v[2],v[3],v[7] ]
 	]
-
+        #glMatrixMode GL_MODELVIEW  
+    #move player
+    
+    
+    glTranslatef -($playerx*2).to_f, -($playery*2).to_f, 0
+     
+       
+ 
+     # glutSolidSphere 10, 4, 4
+    
+      #glutSolidTeapot 1
+    
+    glBindTexture GL_TEXTURE_2D, $textures[0]
 	glBegin(GL_QUADS)
-	
-	if false then
-		exit
-		cube.each do |side|
-			glNormal3fv(side[0])
-
-			glTexCoord2f(1,1)
-			glVertex3fv(side[1])
-			glTexCoord2f(0,1)
-			glVertex3fv(side[2])
-			glTexCoord2f(0,0)
-			glVertex3fv(side[3])
-			glTexCoord2f(1,0)
-			glVertex3fv(side[4])
-		end
-	else
+    
+    
 		$manycuebs.each do |cueb|
 					
 			cueb.each do |side|
@@ -89,12 +92,30 @@ def drawCube
 				glVertex3fv(side[4])
 			end
 		end		
-		
-		
-				
-	end
-	
 	glEnd()
+    
+     #attempt to draw the "player" as a cube of a different texture   
+       
+       # glBegin(GL_QUADS)
+        #cube.each do |side|
+		#		glNormal3fv(side[0])
+		#		glTexCoord2f(1,1)
+#				glVertex3fv(side[1])
+#				glTexCoord2f(0,1)
+#				glVertex3fv(side[2])
+#				glTexCoord2f(0,0)
+#				glVertex3fv(side[3])
+#				glTexCoord2f(1,0)
+#				glVertex3fv(side[4])
+#			end
+    #    glEnd
+       # glMatrixMode GL_MODELVIEW no point we're already on it
+     
+               glTranslatef ($playerx*2).to_f, ($playery*2).to_f, 0
+       glBindTexture GL_TEXTURE_2D, $textures[1]
+        #glutSolidSphere 1, 10, 10
+         glutSolidIcosahedron
+        # glutSolidTeapot 1
 end
 
 def nextClearColor
@@ -115,51 +136,6 @@ def getUniLoc(program, name)
 	return loc
 end
 
-def installBrickShaders(vs_fname,fs_fname)
-	
-	# Create a vertex shader object and a fragment shader object
-	brickVS = glCreateShader(GL_VERTEX_SHADER)
-	brickFS = glCreateShader(GL_FRAGMENT_SHADER)
-
-	# Load source code strings into shaders
-	glShaderSource(brickVS, File.read(vs_fname))
-	glShaderSource(brickFS, File.read(fs_fname))
-
-	# Compile the brick vertex shader, and print out
-	#	the compiler log file.
-	glCompileShader(brickVS)
-  vertCompiled = glGetShaderiv(brickVS, GL_COMPILE_STATUS)
-	puts "Shader InfoLog:\n#{glGetShaderInfoLog(brickVS)}\n"
-	
-	# Compile the brick fragment shader, and print out
-	# the compiler log file.
-	glCompileShader(brickFS)
-  fragCompiled = glGetShaderiv(brickFS, GL_COMPILE_STATUS)
-	puts "Shader InfoLog:\n#{glGetShaderInfoLog(brickFS)}\n"
-	
-	return false if (vertCompiled == 0 || fragCompiled == 0)
-	# Create a program object and attach the two compiled shaders
-	brickProg = glCreateProgram()
-	glAttachShader(brickProg,brickVS)
-	glAttachShader(brickProg,brickFS)
-	# Link the program object and print out the info log
-	glLinkProgram(brickProg)
-	linked = glGetProgramiv(brickProg,GL_LINK_STATUS)
-	puts "Program InfoLog:\n#{glGetProgramInfoLog(brickProg)}\n"
-	return false if linked==0
-
-	# Install program object as part of current state
-	glUseProgram(brickProg)
-
-	# Set up initial uniform values
-	glUniform3f(getUniLoc(brickProg, "BrickColor"), 1.0, 0.3, 0.2)
-	glUniform3f(getUniLoc(brickProg, "MortarColor"), 0.85, 0.86, 0.84)
-	glUniform2f(getUniLoc(brickProg, "BrickSize"), 0.30, 0.15)
-	glUniform2f(getUniLoc(brickProg, "BrickPct"), 0.90, 0.85)
-	glUniform3f(getUniLoc(brickProg, "LightPosition"), 0.0, 0.0, 4.0)
-
-	return true
-end
 
 
 
@@ -193,35 +169,8 @@ display = lambda do
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	
-	case $gleModel[0]
-		when :teapot 
-			glutSolidTeapot(0.6)
-		when :torus 
-			glutSolidTorus(0.2, 0.6, 64, 64)
-		when :sphere
-			glutSolidSphere(0.6, 64, 64)
-		when :cube 
-			
-			if false
-				exit
-				(0..$dun.x2).each do |x|
-					(0..$dun.y2).each do |y|
-				
-						xx=x-($dun.x2/2) ; yy=y-($dun.y2/2)
-				
-						if $dun.map[x,y]==nil	
-							glTranslatef (xx*2).to_f,(yy*2).to_f,0
-							drawCube
-							glTranslatef -(xx*2).to_f,-(yy*2).to_f,0
-						end
-					end
-				end
-			else
-				drawCube
-			end
-			
-		
-	end
+    drawCube # BAM!
+    
 	glFlush()
 	glutSwapBuffers()
 end
@@ -345,13 +294,21 @@ special = lambda do |key,x,y|
 		$fYInertia = 0
 		$fScale = 1.0
 	when GLUT_KEY_LEFT
-		$fXDiff -= 1
+        if $dun.map[$playerx-1, $playery]!=nil
+            $playerx-=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+        end
 	when GLUT_KEY_RIGHT
-		$fXDiff += 1
+		if $dun.map[$playerx+1, $playery]!=nil
+            $playerx+=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+        end
 	when GLUT_KEY_UP
-		$fYDiff -= 1
+        	if $dun.map[$playerx, $playery-1]!=nil
+                $playery-=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+            end
 	when GLUT_KEY_DOWN
-		$fYDiff += 1
+        if $dun.map[$playerx, $playery+1]!=nil
+            $playery+=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+        end
 	end
 end
 
@@ -396,14 +353,33 @@ end
 		end
 	
 		makedungeoncuebs
-	
-		glDepthFunc(GL_LESS)
+        
+        glEnable GL_TEXTURE_2D #tex mapping on
+        glShadeModel GL_SMOOTH #smooth shading on
+        glClearDepth 1.0 #depth buffer setup
+		glDepthFunc(GL_LESS) # GL_LEQUAL in nehe 7
 		glEnable(GL_DEPTH_TEST)
+        #glHint GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST #nicest perspective calcs (from nehe 7)
+        
+        @ambient = [0.5, 0.5, 0.5, 1.0]
+        @diffuse = [1.0, 1.0, 1.0, 1.0]
+        @light_position = [0.0, 0.0, 0.0, -1.0] #these prolly don't need to be @s or maybe need to be globals
+        
+        glEnable GL_LIGHTING
+        
+        glLightfv GL_LIGHT1, GL_AMBIENT, @ambient
+        glLightfv GL_LIGHT1, GL_DIFFUSE, @diffuse
+        glLightfv GL_LIGHT1, GL_POSITION, @light_position
+        #specular?
+        glEnable GL_LIGHT1
+
 		nextClearColor()
 		key.call('?', 0, 0)	 
-		#success = installBrickShaders("brick.vert","brick.frag")
-		success = true
-		glutMainLoop() if success == true
+        inittextures
+        
+        placeplayer
+        
+		glutMainLoop
 	end
 end
 def makedungeoncuebs
@@ -432,8 +408,11 @@ def makedungeoncuebs
 		$manycuebs=[]
 		(0..$dun.x2).each do |x|
 			(0..$dun.y2).each do |y|
-				xx=x-($dun.x2/2) ; yy=y-($dun.y2/2)
-				xx=(xx*2).to_f ; yy=(yy*2).to_f				
+				#xx=x-($dun.x2/2) ; yy=y-($dun.y2/2)
+				#xx=(xx*2).to_f ; yy=(yy*2).to_f				
+                
+                xx=(x*2).to_f ; yy=(y*2).to_f
+                
 				newcueb=[]
 				if $dun.map[x,y]==nil
 				#if $manycuebs.length<3
@@ -450,5 +429,42 @@ def makedungeoncuebs
 				end
 			end	
 		end		
-	puts "manycuebs: #{$manycuebs.length}"
+	#puts "manycuebs: #{$manycuebs.length}"
+end
+def inittextures
+    $textures=glGenTextures 3 # total number of textures
+    loadtexture 0, "Purple.png"
+    loadtexture 1, "Blue.png"
+    loadtexture 2, "Blue.png" #red one just doesn't want to load
+
+    
+    
+    
+    
+    #we no has mipmapz
+    #gluBuild2DMipmaps GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, image
+
+end
+def loadtexture number, name
+    png=PNG.load_file name
+    height=png.height ; width = png.width
+    image=png.data.flatten.map { |c| c.values}.join
+    #the mag filter is used when texture needs to be drawn bigger than it is, min filter is when it's smaller
+   
+    glBindTexture GL_TEXTURE_2D, $textures[number]
+
+glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
+    glTexImage2D GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image
+   
+end
+
+def placeplayer
+    
+    while $dun.map[$playerx, $playery]==nil
+    $playerx=rand 0..$dun.x2
+    $playery=rand 0..$dun.y2
+    end
+    
+
 end

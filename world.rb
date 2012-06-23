@@ -7,6 +7,7 @@ load 'array2d.rb'
 load 'BSPdungeon.rb'
 load 'ui.rb'
 load  "isometric.rb"
+load "brick.rb"
 
 #adding a method to string for sake of syntax. adds method overhead though. nasty
 
@@ -130,6 +131,8 @@ x=World.new
 #UI.hpbar "DEF",1,6,10,UI::YELLOW,89,100 #yellow 
 #UI.hpbar "PWN",1,7,10,UI::MAGENTA,11,100 #magenta
 
+
+
 #UI.cursor :off
 
 #while not STDIN.getch=="q"
@@ -138,8 +141,14 @@ x=World.new
 #end
 #dun.dump
 #UI.cursor :on
-dun=BSPdungeon.new nil,0,0,x.screen_width-1,x.screen_height-1
-x=Graphicalwindow.new dun
-x.show
+
+#dun=BSPdungeon.new nil,0,0,x.screen_width-1,x.screen_height-1
+#x=Graphicalwindow.new dun
+#x.show
+
+$dun=BSPdungeon.new nil,0,0,x.screen_width-1,x.screen_height-1
+x=Window3d.new
+
+
 
 
