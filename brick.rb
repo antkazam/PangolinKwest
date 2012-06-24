@@ -2,9 +2,9 @@
 
 require 'opengl'
 include Gl,Glu,Glut
-require 'png'
-require 'png/reader'
-
+#require 'png'
+#require 'png/reader'
+require 'RMagick'
 
 $rotl = 1 * Math::PI / 180
 $last_time = 0
@@ -431,11 +431,14 @@ def makedungeoncuebs
 		end		
 	#puts "manycuebs: #{$manycuebs.length}"
 end
+
+
+
 def inittextures
     $textures=glGenTextures 3 # total number of textures
     loadtexture 0, "Purple.png"
     loadtexture 1, "Blue.png"
-    loadtexture 2, "Blue.png" #red one just doesn't want to load
+    loadtexture 2, "Red.png" #red one just doesn't want to load
 
     
     
@@ -446,14 +449,19 @@ def inittextures
 
 end
 def loadtexture number, name
-    png=PNG.load_file name
-    height=png.height ; width = png.width
-    image=png.data.flatten.map { |c| c.values}.join
+    #png=PNG.load_file name
+    #height=png.height ; width = png.width
+    #image=png.data.flatten.map { |c| c.values}.join
     #the mag filter is used when texture needs to be drawn bigger than it is, min filter is when it's smaller
    
+png=Magick::ImageList.new name
+height=256 ; width =256
+image=png.to_blob {self.format="rgba"}
+
+
     glBindTexture GL_TEXTURE_2D, $textures[number]
 
-glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
     glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
     glTexImage2D GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image
    
