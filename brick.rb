@@ -61,6 +61,40 @@ def drawCube
 		[ [0,1,0], v[4],v[0],v[1],v[5] ],
 		[ [0,-1,0], v[6],v[2],v[3],v[7] ]
 	]
+    
+   sx=$dun.x
+   sx2=($dun.x2)*2
+   sy=$dun.y
+   sy2=($dun.y2)*2
+   
+   sz=2
+   sz2=4
+   sizey=20
+   sizez=0
+   
+	
+	delta = 0.3
+
+	v= [
+		[ sx2,  sy2,  sz2 ],  # sizez * scale + delta 
+		[ sx2,  sy2, sz ], # -sizez * scale + delta
+		[ sx2, sy, sz ], # -sizez * scale
+		[ sx2, sy, sz2 ], #   sizez * scale
+		[sx,  sy2,  sz2 ], # sizez * scale + delta
+		[sx,  sy2, sz ], #  -sizez * scale + delta
+		[sx, sy, sz ], #  -sizez * scale
+		[sx, sy, sz2 ] #  sizez * scale
+	]
+
+	cube_floor = [
+		[ [1,0,0], v[3],v[2],v[1],v[0] ], # normal, vertices
+		[ [-1,0,0], v[6],v[7],v[4],v[5] ],
+		[ [0,0,-1], v[2],v[6],v[5],v[1] ],
+		[ [0,0,1], v[7],v[3],v[0],v[4] ],
+		[ [0,1,0], v[4],v[0],v[1],v[5] ],
+		[ [0,-1,0], v[6],v[2],v[3],v[7] ]
+	]
+    
         #glMatrixMode GL_MODELVIEW  
     #move player
     
@@ -94,25 +128,26 @@ def drawCube
 		end		
 	glEnd()
     
-     #attempt to draw the "player" as a cube of a different texture   
-       
-       # glBegin(GL_QUADS)
-        #cube.each do |side|
-		#		glNormal3fv(side[0])
-		#		glTexCoord2f(1,1)
-#				glVertex3fv(side[1])
-#				glTexCoord2f(0,1)
-#				glVertex3fv(side[2])
-#				glTexCoord2f(0,0)
-#				glVertex3fv(side[3])
-#				glTexCoord2f(1,0)
-#				glVertex3fv(side[4])
-#			end
-    #    glEnd
+     #draw floor
+       glBindTexture GL_TEXTURE_2D, $textures[1] #floor texture
+        glBegin(GL_QUADS)
+        cube_floor.each do |side|
+            #loop through sides, magnifying it to fit the whole dungeon
+                glNormal3fv(side[0])
+                glTexCoord2f($dun.x2,$dun.y2)
+                glVertex3fv(side[1])
+                glTexCoord2f(0,$dun.y2)
+                glVertex3fv(side[2])
+                glTexCoord2f(0,0)
+                glVertex3fv(side[3])
+                glTexCoord2f($dun.x2,0)
+                glVertex3fv(side[4])
+			end
+    glEnd
        # glMatrixMode GL_MODELVIEW no point we're already on it
      
                glTranslatef ($playerx*2).to_f, ($playery*2).to_f, 0
-       glBindTexture GL_TEXTURE_2D, $textures[1]
+       
         #glutSolidSphere 1, 10, 10
          glutSolidIcosahedron
         # glutSolidTeapot 1
@@ -429,16 +464,18 @@ def makedungeoncuebs
 				end
 			end	
 		end		
-	#puts "manycuebs: #{$manycuebs.length}"
+        
 end
 
 
 
 def inittextures
     $textures=glGenTextures 3 # total number of textures
-    loadtexture 0, "Purple.png"
-    loadtexture 1, "Blue.png"
-    loadtexture 2, "Red.png" #red one just doesn't want to load
+    #loadtexture 0, "Purple.png"
+   loadtexture 0, "media/stdwall.jpg" 
+   loadtexture 1, "media/stdfloor.jpg"
+    #loadtexture 1, "Blue.png"
+  #  loadtexture 2, "Red.png" #red one just doesn't want to load
 
     
     
@@ -455,7 +492,7 @@ def loadtexture number, name
     #the mag filter is used when texture needs to be drawn bigger than it is, min filter is when it's smaller
    
 png=Magick::ImageList.new name
-height=256 ; width =256
+height=512 ; width =512
 image=png.to_blob {self.format="rgba"}
 
 
