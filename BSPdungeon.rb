@@ -152,9 +152,11 @@ class BSPdungeon
 		
 	end
 	def drawroom_in_map
-		UI.setbg UI::YELLOW
-		UI.setfg UI::BLACK
-		(@y..@y2).each {|y|(@x..@x2).each {|x| @@map[x,y]=:floor; print ".".at x,y } }
+		#UI.setbg UI::YELLOW
+		#UI.setfg UI::BLACK
+		(@y..@y2).each {|y|(@x..@x2).each {|x| @@map[x,y]=:floor; 
+                                     #print ".".at x,y
+    } }
 	end
 	
 	def join
@@ -208,7 +210,7 @@ class BSPdungeon
 		p.each do |f|
 			@@map[f[0],f[1]]=:corridor
 			#t+=1;print t.chr.to_s.at f[0],f[1]
-			print ".".at f[0],f[1]
+			#print ".".at f[0],f[1]
 		end
 	end
 	

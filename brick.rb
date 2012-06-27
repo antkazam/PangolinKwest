@@ -2,23 +2,21 @@
 
 require 'opengl'
 include Gl,Glu,Glut
-#require 'png'
-#require 'png/reader'
 require 'RMagick'
 
 $rotl = 1 * Math::PI / 180
 $last_time = 0
 
-$fXDiff =0 # 206
-$fYDiff = 90 # 16
-$fZDiff = 0 # 10
+$fXDiff =-7 # 206
+$fYDiff = 159# 16
+$fZDiff = -7 # 10
 $xLastIncr = 0
 $yLastIncr = 0
 $fXInertia = -0.5
 $fYInertia = 0
 $fXInertiaOld = 0
 $fYInertiaOld = 0
-$fScale = 1.0
+$fScale = 0.15
 $ftime = 0
 $xLast = -1
 $yLast = -1
@@ -34,8 +32,8 @@ SCALE_INCREMENT = 0.5
 TIMER_FREQUENCY_MILLIS = 20
 
 
-#$gleModel = [:cube, :teapot,:torus,:sphere]
-$clearColor = [[0,0,0,1], [0.2,0.2,0.3,1], [0.7,0.7,0.7,1]]
+
+#$clearColor = [[0,0,0,1], [0.2,0.2,0.3,1], [0.7,0.7,0.7,1]]
 
 def drawCube
 	size = 1.0
@@ -114,11 +112,11 @@ def drawCube
 		$manycuebs.each do |cueb|
 					
 			cueb.each do |side|
-				glNormal3fv(side[0])
-				#glNormal3fv cube[0][0]
-				glTexCoord2f(1,1)
+				#glNormal3fv(side[0])
+				glNormal3fv cube[0][0]
+				glTexCoord2f(1,3)
 				glVertex3fv(side[1])
-				glTexCoord2f(0,1)
+				glTexCoord2f(0,3)
 				glVertex3fv(side[2])
 				glTexCoord2f(0,0)
 				glVertex3fv(side[3])
@@ -133,7 +131,8 @@ def drawCube
         glBegin(GL_QUADS)
         cube_floor.each do |side|
             #loop through sides, magnifying it to fit the whole dungeon
-                glNormal3fv(side[0])
+               # glNormal3fv(side[0])
+            glNormal3fv cube[0][0]
                 glTexCoord2f($dun.x2,$dun.y2)
                 glVertex3fv(side[1])
                 glTexCoord2f(0,$dun.y2)
@@ -149,27 +148,14 @@ def drawCube
                glTranslatef ($playerx*2).to_f, ($playery*2).to_f, 0
        
         #glutSolidSphere 1, 10, 10
-         glutSolidIcosahedron
+
+   
+          glBindTexture GL_TEXTURE_2D, $textures[2]   
+            glutSolidIcosahedron
         # glutSolidTeapot 1
 end
 
-def nextClearColor
-	glClearColor($clearColor[0][0],
-							 $clearColor[0][1],
-							 $clearColor[0][2],
-							 $clearColor[0][3])
-	$clearColor << $clearColor.shift # rotate
-end
 
-
-def getUniLoc(program, name)
-	loc = glGetUniformLocation(program, name)
-	
-	if (loc == -1)
-		puts "No such uniform named #{name}"
-	end
-	return loc
-end
 
 
 
@@ -194,7 +180,7 @@ end
 
 display = lambda do
 	glLoadIdentity()
-	glTranslatef(0.0, 0.0, -5.0)
+	glTranslatef(0.0, 0.0, -5)
 	
 	glRotatef($fYDiff, 1,0,0)
 	glRotatef($fXDiff, 0,1,0)
@@ -239,14 +225,11 @@ key = lambda do |key,x,y|
 		$fScale -= SCALE_INCREMENT
 	else
 		puts "Keyboard commands:\n"
-		puts "b - Toggle among background clear colors"
 		puts "q, <esc> - Quit"
-		puts "t - Toggle among models to render"
-		puts "? - Help"
-		puts "<home>     - reset zoom and rotation"
-		puts "<space> or <click>        - stop rotation"
-		puts "<+>, <-> or <ctrl + drag> - zoom model"
-		puts "<arrow keys> or <drag>    - rotate model\n"
+		puts "<home>                            = reset zoom and rotation"
+		puts "left button and maus              = piss around with view"
+        puts "ctrl and left button and maus     =piss around more, including zoom"
+        puts "<arrow keys>                      =moob pangolin\n"
 	end
 end
 
@@ -255,15 +238,15 @@ reshape = lambda do |w,h|
 	vp = 0.8
 	aspect = w.to_f/h.to_f
 	
-	glViewport(0, 0, w, h)
-	glMatrixMode(GL_PROJECTION)
-	glLoadIdentity()
+	glViewport 0, 0, w, h
+	glMatrixMode GL_PROJECTION
+	glLoadIdentity
 	
-	glFrustum(-vp, vp, -vp / aspect, vp / aspect, 3, 10)
+	glFrustum -vp, vp, -vp / aspect, vp / aspect, 1, 100 #1 is zmin, 100 is zmax. both must be positive
 	
-	glMatrixMode(GL_MODELVIEW)
-	glLoadIdentity()
-	glTranslatef(0.0, 0.0, -5.0)
+	glMatrixMode GL_MODELVIEW
+	glLoadIdentity
+	glTranslatef 0.0, 0.0, -5.0 
 end
 
 
@@ -320,29 +303,30 @@ end
 special = lambda do |key,x,y|
 	case key
 	when GLUT_KEY_HOME
-		$fXDiff = 0
-		$fYDiff = 35
-		$fZDiff = 0
+		puts "here: #{$fXDiff} #{$fYDiff} #{$fZDiff} #{$fScale}"
+        $fXDiff = -7
+		$fYDiff = 159
+		$fZDiff = -7
 		$xLastIncr = 0
 		$yLastIncr = 0
 		$fXInertia = -0.5
 		$fYInertia = 0
-		$fScale = 1.0
+		$fScale = 0.15
 	when GLUT_KEY_LEFT
         if $dun.map[$playerx-1, $playery]!=nil
-            $playerx-=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+            $playerx-=1; #print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
         end
 	when GLUT_KEY_RIGHT
 		if $dun.map[$playerx+1, $playery]!=nil
-            $playerx+=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+            $playerx+=1; #print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
         end
 	when GLUT_KEY_UP
         	if $dun.map[$playerx, $playery-1]!=nil
-                $playery-=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+                $playery-=1; #print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
             end
 	when GLUT_KEY_DOWN
         if $dun.map[$playerx, $playery+1]!=nil
-            $playery+=1; print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
+            $playery+=1; #print "#{$playerx}  #{$playery} " ; p  $dun.map[$playerx, $playery]
         end
 	end
 end
@@ -366,7 +350,7 @@ end
 		glutInit()
 		glutInitDisplayMode( GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE)
 		glutInitWindowPosition(100,100)
-		glutInitWindowSize(500, 500)
+		glutInitWindowSize(800, 600)
 		glutCreateWindow( "Pangolin Kwest 3d")
 
 		glutIdleFunc(play)
@@ -396,19 +380,21 @@ end
 		glEnable(GL_DEPTH_TEST)
         #glHint GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST #nicest perspective calcs (from nehe 7)
         
-        @ambient = [0.5, 0.5, 0.5, 1.0]
+        @ambient = [1.0, 1.0, 1.0, 1.0]
         @diffuse = [1.0, 1.0, 1.0, 1.0]
-        @light_position = [0.0, 0.0, 0.0, -1.0] #these prolly don't need to be @s or maybe need to be globals
+        @light_position = [0.0, 0.0, 0.0, 42.0] #these prolly don't need to be @s or maybe need to be globals
         
         glEnable GL_LIGHTING
         
         glLightfv GL_LIGHT1, GL_AMBIENT, @ambient
         glLightfv GL_LIGHT1, GL_DIFFUSE, @diffuse
         glLightfv GL_LIGHT1, GL_POSITION, @light_position
+        
+        glLightfv GL_LIGHT1, GL_SPOT_EXPONENT,  [0.01]
         #specular?
         glEnable GL_LIGHT1
-
-		nextClearColor()
+        glEnable(GL_CULL_FACE);
+		#nextClearColor()
 		key.call('?', 0, 0)	 
         inittextures
         
@@ -419,7 +405,7 @@ end
 end
 def makedungeoncuebs
 	size = 1.0
-	scale = 2.0
+	scale = 3.0
 	delta = 0.0
 	v = [
 		[ size,  size,  size * scale + delta ], 
@@ -474,6 +460,7 @@ def inittextures
     #loadtexture 0, "Purple.png"
    loadtexture 0, "media/stdwall.jpg" 
    loadtexture 1, "media/stdfloor.jpg"
+    loadtexture 2, "media/firefloor.jpg"
     #loadtexture 1, "Blue.png"
   #  loadtexture 2, "Red.png" #red one just doesn't want to load
 
@@ -486,10 +473,7 @@ def inittextures
 
 end
 def loadtexture number, name
-    #png=PNG.load_file name
-    #height=png.height ; width = png.width
-    #image=png.data.flatten.map { |c| c.values}.join
-    #the mag filter is used when texture needs to be drawn bigger than it is, min filter is when it's smaller
+   
    
 png=Magick::ImageList.new name
 height=512 ; width =512

@@ -1,12 +1,12 @@
 # graspee's program that does something. maybe
 # started 2 may 2012
 
-require 'io/console'
+#require 'io/console'
 
 load 'array2d.rb'
 load 'BSPdungeon.rb'
-load 'ui.rb'
-load  "isometric.rb"
+#load 'ui.rb'
+#load  "isometric.rb"
 load "brick.rb"
 
 #adding a method to string for sake of syntax. adds method overhead though. nasty
@@ -112,7 +112,7 @@ end
 
 
 
-x=World.new
+#x=World.new
 #x.generate_outside
 #x.draw
 #(1..10).each do
@@ -145,8 +145,9 @@ x=World.new
 #dun=BSPdungeon.new nil,0,0,x.screen_width-1,x.screen_height-1
 #x=Graphicalwindow.new dun
 #x.show
-
-$dun=BSPdungeon.new nil,0,0,x.screen_width-1,x.screen_height-1
+screen_height=50
+screen_width=50
+$dun=BSPdungeon.new nil,0,0,screen_width-1,screen_height-1
 x=Window3d.new
 
 
