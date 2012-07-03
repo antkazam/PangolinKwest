@@ -147,7 +147,7 @@ end
 #x.show
 screen_height=50
 screen_width=50
-$dun=BSPdungeon.new nil,0,0,screen_width-1,screen_height-1
+$dun=BSPdungeon.new screen_width,screen_height, 5
 x=Window3d.new
 
 

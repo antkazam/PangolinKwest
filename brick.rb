@@ -35,6 +35,62 @@ TIMER_FREQUENCY_MILLIS = 20
 
 #$clearColor = [[0,0,0,1], [0.2,0.2,0.3,1], [0.7,0.7,0.7,1]]
 
+
+def arbcube x, y, z, w, h,zh, t,tx2,ty2
+    sx=x-1                #$dun.x-1
+   sx2=(x+w)*2          #($dun.x2)*2
+   sy=y-1               #$dun.y-1
+   sy2=(y+h)*2          #($dun.y2)*2
+   
+   sx2+=1 ; sy2+=1
+   
+   sz=z
+   sz2=(z+zh)*2
+    # sizey=20
+    # sizez=0
+	#delta = 0.3
+
+	v= [
+		[ sx2,  sy2,  sz2 ],  # sizez * scale + delta 
+		[ sx2,  sy2, sz ], # -sizez * scale + delta
+		[ sx2, sy, sz ], # -sizez * scale
+		[ sx2, sy, sz2 ], #   sizez * scale
+		[sx,  sy2,  sz2 ], # sizez * scale + delta
+		[sx,  sy2, sz ], #  -sizez * scale + delta
+		[sx, sy, sz ], #  -sizez * scale
+		[sx, sy, sz2 ] #  sizez * scale
+	]
+
+	cube = [
+		[ [1,0,0], v[3],v[2],v[1],v[0] ], # normal, vertices
+		[ [-1,0,0], v[6],v[7],v[4],v[5] ],
+		[ [0,0,-1], v[2],v[6],v[5],v[1] ],
+		[ [0,0,1], v[7],v[3],v[0],v[4] ],
+		[ [0,1,0], v[4],v[0],v[1],v[5] ],
+		[ [0,-1,0], v[6],v[2],v[3],v[7] ]
+	]
+   glBindTexture GL_TEXTURE_2D, $textures[t]
+   #glEnable GL_CULL_FACE
+        glBegin(GL_QUADS)
+        
+          
+          
+        cube.each do |side|
+            #loop through sides, magnifying it to fit the whole dungeon
+                glNormal3fv(side[0])
+            #glNormal3fv cube[0][0]
+                glTexCoord2f(tx2,ty2)
+                glVertex3fv(side[1])
+                glTexCoord2f(0,ty2)
+                glVertex3fv(side[2])
+                glTexCoord2f(0,0)
+                glVertex3fv(side[3])
+                glTexCoord2f(tx2,0)
+                glVertex3fv(side[4])
+			end
+    glEnd 
+end
+
 def drawCube
 	size = 1.0
 	scale = 2.0
@@ -60,10 +116,12 @@ def drawCube
 		[ [0,-1,0], v[6],v[2],v[3],v[7] ]
 	]
     
-   sx=$dun.x
-   sx2=($dun.x2)*2
-   sy=$dun.y
-   sy2=($dun.y2)*2
+   sx=-1 #dun.x-1
+   sx2=($dun.width-1)*2
+   sy=-1 #dun.y-1
+   sy2=($dun.height-1)*2
+   
+   sx2+=1 ; sy2+=1
    
    sz=2
    sz2=4
@@ -112,8 +170,8 @@ def drawCube
 		$manycuebs.each do |cueb|
 					
 			cueb.each do |side|
-				#glNormal3fv(side[0])
-				glNormal3fv cube[0][0]
+				glNormal3fv(side[0])
+				#glNormal3fv cube[0][0]
 				glTexCoord2f(1,3)
 				glVertex3fv(side[1])
 				glTexCoord2f(0,3)
@@ -126,13 +184,14 @@ def drawCube
 		end		
 	glEnd()
     
-     #draw floor
+    if false 
+        #draw floor
        glBindTexture GL_TEXTURE_2D, $textures[1] #floor texture
         glBegin(GL_QUADS)
         cube_floor.each do |side|
             #loop through sides, magnifying it to fit the whole dungeon
-               # glNormal3fv(side[0])
-            glNormal3fv cube[0][0]
+                glNormal3fv(side[0])
+            #glNormal3fv cube[0][0]
                 glTexCoord2f($dun.x2,$dun.y2)
                 glVertex3fv(side[1])
                 glTexCoord2f(0,$dun.y2)
@@ -143,6 +202,14 @@ def drawCube
                 glVertex3fv(side[4])
 			end
     glEnd
+    end # if false
+    
+    arbcube 0,0,2,$dun.width-1,$dun.height-1,0,1,$dun.width-1,$dun.height-1
+    
+    glFrontFace GL_CW
+    arbcube 0,0,-3,$dun.width-1,$dun.height-1,0,1,$dun.width-1,$dun.height-1
+    glFrontFace GL_CCW
+    
        # glMatrixMode GL_MODELVIEW no point we're already on it
      
                glTranslatef ($playerx*2).to_f, ($playery*2).to_f, 0
@@ -393,7 +460,8 @@ end
         glLightfv GL_LIGHT1, GL_SPOT_EXPONENT,  [0.01]
         #specular?
         glEnable GL_LIGHT1
-        glEnable(GL_CULL_FACE);
+        glEnable GL_CULL_FACE
+        glFrontFace GL_CCW
 		#nextClearColor()
 		key.call('?', 0, 0)	 
         inittextures
@@ -427,8 +495,8 @@ def makedungeoncuebs
 	]
 	
 		$manycuebs=[]
-		(0..$dun.x2).each do |x|
-			(0..$dun.y2).each do |y|
+		(0..$dun.width-1).each do |x|
+			(0..$dun.height-1).each do |y|
 				#xx=x-($dun.x2/2) ; yy=y-($dun.y2/2)
 				#xx=(xx*2).to_f ; yy=(yy*2).to_f				
                 
@@ -491,8 +559,8 @@ end
 def placeplayer
     
     while $dun.map[$playerx, $playery]==nil
-    $playerx=rand 0..$dun.x2
-    $playery=rand 0..$dun.y2
+    $playerx=rand 0...$dun.width
+    $playery=rand 0...$dun.height
     end
     
 

@@ -1,39 +1,39 @@
 #BSP dungeon class 
 #27 may 2012
-
 class BSPdungeon
-	@@max_depth,@@max_width,@@max_height=5,0,0
-	attr_reader :depth, :x, :y, :x2, :y2, :splitdir, :map
-	def initialize parent,x,y,x2,y2
-		#print "x #{x} y #{y} x2 #{x2} y2 #{y2}\n"
+        attr_accessor :map, :depth, :width, :height, :letsjoinlist
+        def initialize width, height, max_depth
+            @width, @height, @depth=width, height, max_depth
+            @letsjoinlist=Array.new @depth do Array.new end
+            @map=Array2d.new width, height
+            @nodes=BSPdungeon_node.new self, nil, 0, 0, width-1, height-1
+        end
+end
+
+class BSPdungeon_node
+		attr_reader :depth, :x, :y, :x2, :y2, :splitdir, :map
+	def initialize dungeon, parent,x,y,x2,y2
 		@x,@y,@x2,@y2=x,y,x2,y2
+        @dungeon=dungeon
 		@parent,@left,@right=parent,nil,nil
 		
 		if @parent==nil #if parent is nil then this is the top level
 			@depth=1
-			@@max_width=x2-x;@@max_height=y2-y #max width will be -1 from real but to compare it's ok
-			@@map=Array2d.new width,height #map of block by block excitement
-			@@letsjoinlist=Array.new @@max_depth do Array.new end #this is our array we build up that we later use to join rooms and halves
-			#@@@max_x=x2 ; @@max_y=y2
 		else
 			@depth=@parent.depth+1
 		end
 		
-		if @depth==@@max_depth then
+		if @depth==@dungeon.depth then
 			shrink
-			#print @depth.to_s.at @x,@y
-			
 		else
-			#UI.filledrect @x,@y,@x2-@x+1,@y2-@y+1,UI::BLACK
 			split
-			#if @depth==@@max_depth-1 then print @splitdir.to_s.at @x,@y end
-			@@letsjoinlist[@depth].push self #building up the list of things to join later
+			@dungeon.letsjoinlist[@depth].push self #building up the list of things to join later
 		end
 	
 		if @parent==nil
 			#we are at the top level and the split has been done and recursed all the way down
 			#join and complete!
-			(1..@@max_depth-1).reverse_each { |lev| @@letsjoinlist[lev].each { |xxx| xxx.join }}
+			(1..@dungeon.depth-1).reverse_each { |lev| @dungeon.letsjoinlist[lev].each { |xxx| xxx.join }}
 		end
 		
 		
@@ -41,7 +41,7 @@ class BSPdungeon
 	end
 	
 	def map
-		@@map
+		@dungeon.map
 	end
 	def width
 		@x2-@x+1
@@ -55,8 +55,6 @@ class BSPdungeon
 		amount=rand(40..60) #split from 40 to 60 %
 		#cast the dice. pivot on .5 horiz or vert split
 		choice=rand
-		#pivotx=(((@x2.to_f-@x.to_f+1.0)/100)*amount).round #I have tested this. if x2=9 and x=0 the pivot value with 
-		#pivoty=(((@y2.to_f-@y.to_f+1.0)/100)*amount).round # 40-60% will be 4,5 or 6
 		pivotx=amount.percentof width
 		pivoty=amount.percentof height
 		
@@ -75,23 +73,23 @@ class BSPdungeon
 		end
 	end	
 	def splithoriz p
-		if p<4 or (@x2-(@x+p))<3 or (@depth==@@max_depth-1 and @y2-@y==@@max_height)
+		if p<4 or (@x2-(@x+p))<3 or (@depth==@dungeon.depth-1 and @y2-@y==(@dungeon.height-1))
 			return false  #room would be too small on h split or is on last depth and never been split except horiz
 		else
 			@splitdir=:horiz 
-			@left=BSPdungeon.new self,@x,@y,@x+p-1,@y2 #split into left and right rooms
-			@right=BSPdungeon.new self,@x+p,@y,@x2,@y2
+			@left=BSPdungeon_node.new @dungeon, self,@x,@y,@x+p-1,@y2 #split into left and right rooms
+			@right=BSPdungeon_node.new @dungeon, self,@x+p,@y,@x2,@y2
 			
 			true
 		end
 	end
 	def splitvert p
-		if p<4 or (@y2-(@y+p))<3 or (@depth==@@max_depth-1 and @x2-@x==@@max_width) 
+		if p<4 or (@y2-(@y+p))<3 or (@depth==@dungeon.depth-1 and @x2-@x==(@dungeon.width-1))
 			return false #room would be too small on v split or is on last depth and never been split except vert
 		else
 			@splitdir=:vert 
-			@left=BSPdungeon.new self,@x,@y,@x2,@y+p-1 #split into up and down
-			@right=BSPdungeon.new self,@x,@y+p,@x2,@y2 
+			@left=BSPdungeon_node.new @dungeon, self,@x,@y,@x2,@y+p-1 #split into up and down
+			@right=BSPdungeon_node.new @dungeon, self,@x,@y+p,@x2,@y2 
 			
 			true
 		end
@@ -154,13 +152,13 @@ class BSPdungeon
 	def drawroom_in_map
 		#UI.setbg UI::YELLOW
 		#UI.setfg UI::BLACK
-		(@y..@y2).each {|y|(@x..@x2).each {|x| @@map[x,y]=:floor; 
+		(@y..@y2).each {|y|(@x..@x2).each {|x| @dungeon.map[x,y]=:floor; 
                                      #print ".".at x,y
     } }
 	end
 	
 	def join
-		#if @depth != @@max_depth-1 then return end #this will be deleted
+		#if @depth != @dungeon.depth-1 then return end #this will be deleted
 		
 		if @splitdir==:vert
 			genesisx=rand(@x..@x2) #pick a random x point along the horizontal line
@@ -208,7 +206,7 @@ class BSPdungeon
 		#UI.setfg @depth	
 		#t=64
 		p.each do |f|
-			@@map[f[0],f[1]]=:corridor
+			@dungeon.map[f[0],f[1]]=:corridor
 			#t+=1;print t.chr.to_s.at f[0],f[1]
 			#print ".".at f[0],f[1]
 		end
@@ -227,10 +225,10 @@ class BSPdungeon
 				return false #we got to the edge
 			end
 			steps << [tx,ty] # adds this square to steps.
-			if (dx!=1 and tx-1>=half.x and @@map[tx-1,ty]!=nil) \
-			or (dx!=-1 and tx+1<=half.x2 and @@map[tx+1,ty]!=nil) \
-			or (dy!=1 and ty-1>=half.y and @@map[tx,ty-1]!=nil) \
-			or (dy!=-1 and ty+1<=half.y2 and @@map[tx,ty+1]!=nil)
+			if (dx!=1 and tx-1>=half.x and @dungeon.map[tx-1,ty]!=nil) \
+			or (dx!=-1 and tx+1<=half.x2 and @dungeon.map[tx+1,ty]!=nil) \
+			or (dy!=1 and ty-1>=half.y and @dungeon.map[tx,ty-1]!=nil) \
+			or (dy!=-1 and ty+1<=half.y2 and @dungeon.map[tx,ty+1]!=nil)
 				return steps 
 			end
 			tx+=dx; ty+=dy
