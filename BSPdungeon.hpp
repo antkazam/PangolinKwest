@@ -3,7 +3,7 @@
 
 
 #include <vector>
-#include <list>
+using std::vector;
 
 enum mapTileType { NIL, CORRIDOR, ROOM, DOOR };
 
@@ -16,9 +16,9 @@ class BSPdungeon_node;
 
 class BSPdungeon {
 public:
-  std::vector<std::vector<mapTileType> > map;
-  int depth,width,height;
-  std::vector < std::list <BSPdungeon_node*>> letsjoinlist;
+  vector<vector<mapTileType> > map;
+  int width, height, depth;
+  vector < vector <BSPdungeon_node*>> letsjoinlist;
   BSPdungeon_node* nodes;
   BSPdungeon(int _width,int _height,int _max_depth);
 };

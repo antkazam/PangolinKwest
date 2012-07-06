@@ -11,7 +11,7 @@ class BSPdungeon
 end
 
 class BSPdungeon_node
-		attr_reader :depth, :x, :y, :x2, :y2, :splitdir, :map
+		attr_reader :depth, :x, :y, :x2, :y2, :splitdir
 	def initialize dungeon, parent,x,y,x2,y2
 		@x,@y,@x2,@y2=x,y,x2,y2
         @dungeon=dungeon
@@ -40,9 +40,7 @@ class BSPdungeon_node
 		
 	end
 	
-	def map
-		@dungeon.map
-	end
+	
 	def width
 		@x2-@x+1
 	end
