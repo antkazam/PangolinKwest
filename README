@@ -2,19 +2,21 @@ Pangolin Kwest!
 
 A ruby roguelike! It might be ascii, it might be isometric, it might be opengl full 3d! Basically it's all in a state of flux.
 
-At the moment it's opengl. You start it with:
-ruby world.rb
+Right now there are basically two versions of PK mixed up together, a ruby one and a c++ one.
 
-You'll get a 3d rotating dungeon in opengl with ugly purple texture mapping but it will be too zoomed in to see anything. You'll need to hold down control and push the mouse forwards or backwards to see the dungeon.
+To run the ruby one you'll need gems:
+	opengl (drBrain's version, google to find it on git then dl it)
+	rmagick
+
+To see PK in its opengl glory: ruby world.rb
+
+There's also an isometric rendering of the dungeon in there but it's commented out or not set up or something. It uses gosu so you'd need that gem.
+
+The 2nd version of the "game" is in c++. See bunch of cpp and hpp files and primitive makefile.
+If you make it and run it, it will print out the same random dungeon every time.
+
+I had a right job converting the dungeon generation code from ruby to c++! It seems to work now though.
+
+Next step irrlicht.
 
 
-graspee
-
-
-list of gem dependencies (I might forget something, and these may themselves have 
-				other dependencies):
-
-		opengl (drBrain's version- google it to find the github to dl from)
-		png
-		gosu
-		

@@ -43,7 +43,7 @@ public:
   void filldungeoncorridor(vector<pair<int,int> > *p);
   
   vector<pair<int,int> >* shootray(BSPdungeon_node* half, int startx,int starty,direction dir);
-  vector<pair<int,int> >* shootraytoside(BSPdungeon_node* half,int startx,int starty,direction dir);
+  vector<pair<int,int> >* shootraystoside(BSPdungeon_node* half,int startx,int starty,direction dir);
   
 };
 

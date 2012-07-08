@@ -147,8 +147,7 @@ void BSPdungeon_node::shrink()
 }
 
 void BSPdungeon_node::drawroom_in_map()
-{ //  vector<vector<mapTileType> > map;
-  cout << dungeon->map.size() << ": " << dungeon->map[0].size() << ": " << dungeon->map[1].size() << endl;
+{ 
   for(int g=y;g<y2+1;g++){
     for(int f=x;f<x2+1;f++){
       dungeon->map[f][g]=ROOM;
@@ -194,7 +193,8 @@ void BSPdungeon_node::join()
 void BSPdungeon_node::bentjoin(BSPdungeon_node* half, int xx, int yy, direction dir)
 {
    vector <pair<int,int> > *path;
-   path=shootraytoside(half,xx,yy,dir);
+   path=shootraystoside(half,xx,yy,dir);
+   
    if(path->empty()){
     error_out();
    } else {
@@ -208,7 +208,7 @@ void BSPdungeon_node::filldungeoncorridor(vector< pair< int, int > >* p)
     dungeon->map[f.first][f.second]=CORRIDOR;
   }
 }
-//this function returns nullptr for fail, not an empty list
+
 vector< pair< int, int > >* BSPdungeon_node::shootray(BSPdungeon_node* half, int startx, int starty, direction dir)
 {
   int dx=DIRPAIRS[dir][0]; int dy=DIRPAIRS[dir][1];
@@ -229,26 +229,37 @@ vector< pair< int, int > >* BSPdungeon_node::shootray(BSPdungeon_node* half, int
   }
 }
 
-vector< pair< int, int > >* BSPdungeon_node::shootraytoside(BSPdungeon_node* half, int startx, int starty, direction dir)
+vector< pair< int, int > >* BSPdungeon_node::shootraystoside(BSPdungeon_node* half, int startx, int starty, direction dir)
+// follows the same path as "shootray" but instead of checking one square ahead and to sides
+// it shoots secondary rays out to each side. Also rather than returning with the first hit, we take all
+// hits and return one of them at random. if there are  no paths the return array will be empty rather than
+// return false
 {
   int dx=DIRPAIRS[dir][0]; int dy=DIRPAIRS[dir][1];
   int tx=startx,ty=starty;
   vector< pair< int, int > >* result;
   vector <vector<pair<int,int> > *>* steps=new vector<vector<pair<int,int> > *>;
   vector<pair<int,int> >* firstel=new vector<pair<int,int> >;
-  while(true){
-    if(dx!=0){
-      result=shootray(half,tx,ty,UP);if(result!=nullptr){firstel->insert(firstel->end(), result->begin(), result->end());steps->push_back(firstel);}
-      result=shootray(half,tx,ty,DOWN);if(result!=nullptr){firstel->insert(firstel->end(), result->begin(), result->end());steps->push_back(firstel);}
-    } else {
-      result=shootray(half,tx,ty,LEFT);if(result!=nullptr){firstel->insert(firstel->end(), result->begin(), result->end());steps->push_back(firstel);}
-      result=shootray(half,tx,ty,RIGHT);if(result!=nullptr){firstel->insert(firstel->end(), result->begin(), result->end());steps->push_back(firstel);}
+  vector<pair<int,int> >*temp;
+  while(true){ //loop for ever!
+    if(dx!=0){ //we are going left or right so shoot rays up and down
+      //FIXME instead of copying what firstel is, currently each time and adding it, plus result to steps, we could just add result to steps
+      //and when we return a random result from steps we could um somehow have saved how many elements were in firstel and add that many on
+      //before returning it
+      result=shootray(half,tx,ty,UP);if(result!=nullptr){temp=new vector<pair<int,int> >;vpa(temp,firstel);vpa(temp,result);steps->push_back(temp);}
+      result=shootray(half,tx,ty,DOWN);if(result!=nullptr){temp=new vector<pair<int,int> >;vpa(temp,firstel);vpa(temp,result);steps->push_back(temp);}
+    } else { //we are going up or down so shoot rays left and right
+      result=shootray(half,tx,ty,LEFT);if(result!=nullptr){temp=new vector<pair<int,int> >;vpa(temp,firstel);vpa(temp,result);steps->push_back(temp);}
+      result=shootray(half,tx,ty,RIGHT);if(result!=nullptr){temp=new vector<pair<int,int> >;vpa(temp,firstel);vpa(temp,result);steps->push_back(temp);}
     }
-     if(  (dx==-1 && tx==half->x) || (dx==1 && tx==half->x2) || (dy==-1 && ty==half->y) || (dy==1 && ty==half->y2)   ){
-      return steps->at(lil::rand(0,steps->size()));
-     }
-     firstel->push_back(make_pair(tx,ty));
-     tx+=dx; ty+=dy;
+    //if we got to the edge then return a random path from steps 
+    if(  (dx==-1 && tx==half->x) || (dx==1 && tx==half->x2) || (dy==-1 && ty==half->y) || (dy==1 && ty==half->y2)   ){
+       return steps->at(lil::rand(0,steps->size()-1));
+    }
+    //add  current square to firstel, which represents the first line of the L-shaped corridor 
+    firstel->push_back(make_pair(tx,ty));
+    //move one square further in the direction we are going
+    tx+=dx; ty+=dy;
   }
 }
 

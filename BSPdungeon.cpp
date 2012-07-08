@@ -19,7 +19,7 @@ BSPdungeon::BSPdungeon(int _width, int _height, int _max_depth)
 {
   letsjoinlist.resize(depth);
   map.resize(height);
-  for (auto f : map){
+  for (auto &f : map){
     f.resize(width);
   }
   nodes=new BSPdungeon_node(this,nullptr,0,0,width-1,height-1);
