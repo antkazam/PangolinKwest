@@ -2,27 +2,81 @@
 
 #include "BSPdungeon.hpp"
 
+
+#include <irrlicht/irrlicht.h>
+using namespace irr;
+using namespace core;
+using namespace scene;
+using namespace video;
+using namespace io;
+using namespace gui;
+
+#ifdef _IRR_WINDOWS_
+#pragma comment(lib, "Irrlicht.lib")
+#pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#endif
+
+
 int main(int argc, char **argv) {
-    std::cout << "Projekt Pangolin Kwest:" << std::endl;
+    BSPdungeon dun(50,50,5);
     
-    BSPdungeon x(50,50,5);
-    
-    for(int f=0;f<50;f++){
-      for(int g=0;g<50;g++){
-	if(x.map[f][g]==NIL){
-	  std::cout << "##" ;
-	} else {
-	  if(x.map[f][g]==ROOM){
-	    std::cout << "  ";
-	  } else {
-	      std:: cout << ".." ;
-	  }
+   IrrlichtDevice *device =createDevice( video::EDT_OPENGL, dimension2d<u32>(640, 480), 16,false, false, false, 0);
+
+	if (!device)
+		return 1;
+
+	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
+
 	
+	IVideoDriver* driver = device->getVideoDriver();
+	ISceneManager* smgr = device->getSceneManager();
+	IGUIEnvironment* guienv = device->getGUIEnvironment();
+
+	guienv->addStaticText(L"Pangolin Kwest 3D",
+		rect<s32>(10,10,260,22), true);
+	//-------------------------------------------	
+	
+	int x,y;
+	for(x=0;x<50;x++){
+		for(y=0;y<50;y++){
+		  if(dun.map[x][y]==NIL){
+		    ISceneNode* cueb=smgr->addCubeSceneNode(10);
+		    cueb->setMaterialFlag(EMF_LIGHTING, false);
+		    cueb->setMaterialTexture( 0, driver->getTexture("stdwall.jpg") );
+		    cueb->setPosition(vector3df(x*10,0,y*10));
+		  }
+		}
+	}	
+
+	
+
+
+
+	//-------------------------------------------	
+
+
+
+	//smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+	smgr->addCameraSceneNodeFPS();
+	
+	while(device->run())
+	{
+		
+		driver->beginScene(true, true, SColor(255,100,101,140));
+
+		smgr->drawAll();
+		guienv->drawAll();
+
+		driver->endScene();
 	}
+
 	
-      }
-      std::cout << std::endl ;
-    }
+	device->drop();
+
+    
+    
+    
+    
     
     
     return 0;

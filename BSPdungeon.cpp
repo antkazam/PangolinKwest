@@ -25,4 +25,22 @@ BSPdungeon::BSPdungeon(int _width, int _height, int _max_depth)
   nodes=new BSPdungeon_node(this,nullptr,0,0,width-1,height-1);
 }
 
-
+void BSPdungeon::show_to_console()
+{
+ for(int f=0;f<50;f++){
+      for(int g=0;g<50;g++){
+	if(map[f][g]==NIL){
+	  std::cout << "##" ;
+	} else {
+	  if(map[f][g]==ROOM){
+	    std::cout << "  ";
+	  } else {
+	      std:: cout << ".." ;
+	  }
+	
+	}
+	
+      }
+      std::cout << std::endl ;
+    }
+}

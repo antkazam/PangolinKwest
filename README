@@ -13,10 +13,10 @@ To see PK in its opengl glory: ruby world.rb
 There's also an isometric rendering of the dungeon in there but it's commented out or not set up or something. It uses gosu so you'd need that gem.
 
 The 2nd version of the "game" is in c++. See bunch of cpp and hpp files and primitive makefile.
-If you make it and run it, it will print out the same random dungeon every time.
+If you make it and run it, it will display the dungeon in (at the moment) very primitive form with irrlicht (which lib is obviously required).
 
-I had a right job converting the dungeon generation code from ruby to c++! It seems to work now though.
 
-Next step irrlicht.
+
+
 
 

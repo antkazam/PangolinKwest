@@ -21,6 +21,7 @@ public:
   vector < vector <BSPdungeon_node*>> letsjoinlist;
   BSPdungeon_node* nodes;
   BSPdungeon(int _width,int _height,int _max_depth);
+  void show_to_console();
 };
 
 
